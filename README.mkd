@@ -11,6 +11,7 @@ esque javascript environments like Titanium.
 ## Installation
 
 Include the `tiajax.js` file in your project in the app.js file to have access to it globally.
+
 	Titanium.include("/path/to/tiajax.js")
 
 ## Usage
@@ -20,13 +21,17 @@ callbacks (local and global) are available. Docs available at [the jQuery API re
 
 To use any of the more advanced functionality, call the methods you would normally call on `$` on `Titanium.Network`. For example,
 to modify the default `ajaxOptions` used, call
+
 	Titanium.Network.ajaxSetup(newOptions)
 instead of
+
 	jQuery.ajaxSetup(newOptions)
 
 If you have some existing code that uses jQuery.ajax, you should be able to drop in this library and set
+
 	$ = {}
 	$.ajax = Titanium.Network.ajax
+
 in app.js, and it should work. 
 
 The same goes for the global callback setup, but if you are using these, please see the Caveats section below because there are API
@@ -57,10 +62,15 @@ before the inner callback script. See this ticket for an exact example: [Titaniu
 * **Global callbacks should be attached using the convienence methods only**
 Titanium's event listeners (`fireEvent` and `addEventListener` vs jQuery's `bind` and `trigger`) work more like their DOM equivalents
 and only allow one argument to be passed to event handlers, the event object. jQuery's handy `ajaxSend`, `ajaxError`, `ajaxComplete` (all listed [here](http://api.jquery.com/category/ajax/global-ajax-event-handlers/)) global ajax event handlers take several arguments in standard jQuery.
-To attach global method handlers with method signatures like this:
+
+To attach global method handlers with signatures like this
+
 	function handleAjaxError(event, XMLHttpRequest, ajaxOptions, thrownError)
+
 make certain you attach them by calling
+
 	Titanium.Network.ajaxError(handleAjaxError)
+
 and not `addEventListener`-ing them. If you do, you'll get one event object with the xhr, options, and error objects as properties on it.
 Not the end of the world, but I don't want you to fall into this trap and spend years trying to figure out why your callback isn't getting
 the arguments it expects. 
