@@ -1,0 +1,68 @@
+# jQuery $.ajax for Appcelerator Titanium Mobile SDK
+
+### Problem
+jQuery's `$.ajax` method is super useful and a great way to structure ajax requests and the callback schemes. Problem is, jQuery as
+a whole is a heavyweight library to load when you don't need any of the DOM manipulation awesomeness it provides, like in server-side
+esque javascript environments like Titanium.
+
+**Solution**: extract the `ajax` method and make it use `Titanium.Network.createHTTPClient`, keeping the api exactly the same as 
+`$.ajax`.
+
+## Installation
+
+Include the `tiajax.js` file in your project in the app.js file to have access to it globally.
+	Titanium.include("/path/to/tiajax.js")
+
+## Usage
+
+Use `Titanium.ajax()` or `Titanium.Network.ajax()` as you would `$.ajax()`. All the configuration options (including defaults) and 
+callbacks (local and global) are available. Docs available at [the jQuery API reference.](http://api.jquery.com/jQuery.ajax/)
+
+To use any of the more advanced functionality, call the methods you would normally call on `$` on `Titanium.Network`. For example,
+to modify the default `ajaxOptions` used, call
+	Titanium.Network.ajaxSetup(newOptions)
+instead of
+	jQuery.ajaxSetup(newOptions)
+
+If you have some existing code that uses jQuery.ajax, you should be able to drop in this library and set
+	$ = {}
+	$.ajax = Titanium.Network.ajax
+in app.js, and it should work. 
+
+The same goes for the global callback setup, but if you are using these, please see the Caveats section below because there are API
+differences.
+
+I've tested this on Titanium Mobile SDK 1.4.1.1.
+
+## Dependencies
+
+This wrapper has no dependencies on external libraries. Once more, you do not need jQuery or Underscore
+or anything of this sort to use this library. Just vanilla Titanium.
+
+For development, I've used (CoffeeScript)[http://jashkenas.github.com/coffee-script/], which might make it hard to keep up with changes
+to jQuery, but its so much easier to write in. If you want to contribute changes, I'd love it if you made them to the .coffee file and 
+recompiled the .js file.
+
+## Caveats
+
+There are two significant issues with this code's API compared to the standard jQuery `$.ajax` API. 
+
+* **Synchronous XHR callback execution is unpredictably deferred**
+This is a little bit of an issue for some developers who are using synchronous XHR requests. The validity of doing so aside, be warned!
+Usually when you make an XHR request, the script doesn't progress beyond `xhr.send()` until the onsuccess/onerror callbacks have been
+executed. Titanium's XHR implementation doesn't do this, and instead executes them somewhat asynchronously. The script won't progress 
+beyond the `xhr.send()` line until the request is received and parsed, so your data will be available, but the outer script will execute
+before the inner callback script. See this ticket for an exact example: [Titanium Lighthouse Ticket](https://appcelerator.lighthouseapp.com/projects/32238/tickets/2107-httpclient-doesnt-execute-callbacks-before-returning-in-synchronous-mode). Pretty lame if you ask me.
+
+* **Global callbacks should be attached using the convienence methods only**
+Titanium's event listeners (`fireEvent` and `addEventListener` vs jQuery's `bind` and `trigger`) work more like their DOM equivalents
+and only allow one argument to be passed to event handlers, the event object. jQuery's handy `ajaxSend`, `ajaxError`, `ajaxComplete` (all listed [here](http://api.jquery.com/category/ajax/global-ajax-event-handlers/)) global ajax event handlers take several arguments in standard jQuery.
+To attach global method handlers with method signatures like this:
+	function handleAjaxError(event, XMLHttpRequest, ajaxOptions, thrownError)
+make certain you attach them by calling
+	Titanium.Network.ajaxError(handleAjaxError)
+and not `addEventListener`-ing them. If you do, you'll get one event object with the xhr, options, and error objects as properties on it.
+Not the end of the world, but I don't want you to fall into this trap and spend years trying to figure out why your callback isn't getting
+the arguments it expects. 
+
+Also, none of the `$.get` or `$.load` style functions are available. Feel free to add them yourself or ask me to if you are lazy and you need them.
