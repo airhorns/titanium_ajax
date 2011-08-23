@@ -41,12 +41,16 @@ I've tested this on Titanium Mobile SDK 1.4.1.1.
 
 ## Dependencies
 
-This wrapper has no dependencies on external libraries. Once more, you do not need jQuery or Underscore
-or anything of this sort to use this library. Just vanilla Titanium.
+This wrapper a dependency on Underscore.js. Just that and vanilla Titanium.
 
-For development, I've used (CoffeeScript)[http://jashkenas.github.com/coffee-script/], which might make it hard to keep up with changes
+For development, I've used [CoffeeScript](http://jashkenas.github.com/coffee-script/), which might make it hard to keep up with changes
 to jQuery, but its so much easier to write in. If you want to contribute changes, I'd love it if you made them to the .coffee file and 
 recompiled the .js file.
+
+## jQuery Version
+
+Note that this library is based on a now outdated version of `jQuery.ajax`. `Titanium.ajax` doesn't support `Deferreds` or any of the
+goodness available in the new jQuery `ajax` functions since jQuery 1.5. Sorry!
 
 ## Caveats
 
